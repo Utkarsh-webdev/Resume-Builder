@@ -25,7 +25,7 @@ const LandingPage = () => {
       {/* ===== Header ===== */}
       <header className="lp-header">
         <h1 className="lp-logo" onClick={() => navigate("/")}>
-          Draft<span className="lp-logo-dot">.</span>
+          Draft<span className="lp-logo-accent">ly</span>
         </h1>
 
         <button className="lp-btn-ghost" onClick={() => openAuth("login")}>
@@ -112,6 +112,23 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* ===== Footer ===== */}
+      <footer className="lp-footer">
+        <span>© {new Date().getFullYear()} Draftly</span>
+        <span className="lp-footer-dot">·</span>
+        <span>
+          Built by{" "}
+          <a
+            href="https://github.com/Utkarsh-webdev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lp-footer-credit"
+          >
+            utkarsh_webdev
+          </a>
+        </span>
+      </footer>
+
       {/* ===== Auth Modal ===== */}
       <Modal
         isOpen={openAuthModal}
@@ -170,7 +187,7 @@ const LandingPage = () => {
           color: var(--ink);
           margin: 0;
         }
-        .lp-logo-dot { color: var(--signal); }
+        .lp-logo-accent { color: var(--signal); font-style: italic; }
 
         .lp-btn-ghost {
           font-family: var(--font-body);
@@ -380,6 +397,34 @@ const LandingPage = () => {
         .lp-swatch-signal { background: var(--signal); }
         .lp-swatch-violet { background: var(--violet); }
         .lp-swatch-ink { background: var(--ink); }
+
+        /* Footer */
+        .lp-footer {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 24px 24px 40px;
+          border-top: 1px solid var(--line);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          font-family: var(--font-mono);
+          font-size: 0.78rem;
+          color: var(--graphite);
+        }
+        .lp-footer-dot { color: var(--line); }
+        .lp-footer-credit {
+          color: var(--ink);
+          font-weight: 500;
+          text-decoration: underline;
+          text-decoration-color: var(--signal);
+          text-underline-offset: 3px;
+        }
+        .lp-footer-credit:hover { color: var(--signal); }
+        @media (max-width: 480px) {
+          .lp-footer { flex-direction: column; gap: 4px; text-align: center; }
+          .lp-footer-dot { display: none; }
+        }
       `}</style>
     </div>
   );
