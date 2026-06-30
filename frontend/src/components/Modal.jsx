@@ -82,6 +82,9 @@ const Modal = ({
           z-index: 10;
           width: 100%;
           max-width: 460px;
+          max-height: min(720px, 92vh);
+          display: flex;
+          flex-direction: column;
           background: var(--paper, #faf7f0);
           border: 1px solid var(--line, #e4dfd3);
           border-radius: 22px;
@@ -98,6 +101,7 @@ const Modal = ({
         }
 
         .dm-header {
+          flex-shrink: 0;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -134,6 +138,7 @@ const Modal = ({
           justify-content: center;
           height: 38px;
           width: 38px;
+          flex-shrink: 0;
           border-radius: 50%;
           border: 1px solid var(--line, #e4dfd3);
           background: var(--paper, #faf7f0);
@@ -155,11 +160,23 @@ const Modal = ({
           top: 18px;
           right: 18px;
           z-index: 5;
+          background: var(--paper, #faf7f0);
         }
 
-        .dm-body { padding: 36px 32px; }
+        /* Body scrolls internally when content is taller than the modal */
+        .dm-body {
+          padding: 36px 32px;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE/Edge */
+        }
+        .dm-body::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Edge (Chromium) */
+        }
         @media (max-width: 480px) {
           .dm-body { padding: 30px 22px; }
+          .dm-modal { max-height: 94vh; }
         }
       `}</style>
     </div>

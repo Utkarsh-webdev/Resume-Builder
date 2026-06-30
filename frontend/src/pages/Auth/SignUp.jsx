@@ -1,22 +1,36 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Input from "../../components/inputs/Input";
+import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector";
+import { validateEmail } from "../../utils/helper";
 
 const Signup = ({ setCurrentPage }) => {
+  const navigate = useNavigate();
+
+  // Form States
+  const [profilePic, setProfilePic] = useState(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
-
+  // Handle Signup
   const handleSignup = async (e) => {
     e.preventDefault();
+
     setError("");
 
     if (!name || !email || !password) {
       setError("Please fill all fields.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
@@ -28,10 +42,16 @@ const Signup = ({ setCurrentPage }) => {
     setLoading(true);
 
     try {
-      // TODO: Replace this with your API call
-      console.log("Name:", name);
-      console.log("Email:", email);
-      console.log("Password:", password);
+      console.log({
+        profilePic,
+        name,
+        email,
+        password,
+      });
+
+      // TODO:
+      // Upload Image
+      // Register User
 
       navigate("/dashboard");
     } catch (err) {
@@ -43,29 +63,33 @@ const Signup = ({ setCurrentPage }) => {
 
   return (
     <div className="auth-wrap">
-      <span className="auth-eyebrow">START YOUR DRAFT</span>
+      <span className="auth-eyebrow">CREATE ACCOUNT</span>
 
-      <h3 className="auth-title">Create your account</h3>
+      <h3 className="auth-title">Join Resume Builder</h3>
 
       <p className="auth-subtext">
-        Free to start. No credit card required.
+        Create your account and start building professional resumes.
       </p>
+
+      <div className="auth-photo-row">
+        <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
+      </div>
 
       <form onSubmit={handleSignup} className="auth-form">
         <Input
-          label="Full name"
+          label="Full Name"
           type="text"
           name="name"
-          placeholder="Jordan Lee"
+          placeholder="John Doe"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
 
         <Input
-          label="Email"
+          label="Email Address"
           type="email"
           name="email"
-          placeholder="you@example.com"
+          placeholder="john@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -74,7 +98,7 @@ const Signup = ({ setCurrentPage }) => {
           label="Password"
           type="password"
           name="password"
-          placeholder="Min 8 characters"
+          placeholder="Minimum 8 characters"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -82,7 +106,7 @@ const Signup = ({ setCurrentPage }) => {
         {error && <p className="auth-error">{error}</p>}
 
         <button type="submit" disabled={loading} className="auth-submit">
-          {loading ? "Creating account..." : "Create account →"}
+          {loading ? "Creating Account..." : "Create Account →"}
         </button>
 
         <p className="auth-switch">
@@ -92,7 +116,7 @@ const Signup = ({ setCurrentPage }) => {
             className="auth-link"
             onClick={() => setCurrentPage("login")}
           >
-            Log in
+            Login
           </button>
         </p>
       </form>
@@ -121,8 +145,14 @@ const Signup = ({ setCurrentPage }) => {
 
         .auth-subtext {
           color: var(--graphite, #6b6862);
-          margin: 0 0 28px;
+          margin: 0 0 24px;
           font-size: 0.98rem;
+        }
+
+        .auth-photo-row {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 28px;
         }
 
         .auth-form { display: flex; flex-direction: column; gap: 22px; }

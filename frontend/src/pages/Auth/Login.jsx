@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/inputs/Input";
+import { validateEmail } from "../../utils/helper";
 
 const Login = ({ setCurrentPage }) => {
   const [email, setEmail] = useState("");
@@ -14,10 +15,20 @@ const Login = ({ setCurrentPage }) => {
     e.preventDefault();
     setError("");
 
-    if (!email || !password) {
-      setError("Please fill all fields.");
-      return;
-    }
+   if (!email || !password) {
+  setError("Please fill all fields.");
+  return;
+}
+
+if (!validateEmail(email)) {
+  setError("Please enter a valid email address.");
+  return;
+}
+
+if (password.length < 8) {
+  setError("Password must be at least 8 characters.");
+  return;
+}
 
     setLoading(true);
 
