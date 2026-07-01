@@ -93,6 +93,13 @@ const getUserResumes = async (req, res) => {
 // ===============================
 const getResumeById = async (req, res) => {
   try {
+    console.log("Requested resume id:", req.params.id);
+    console.log("Requesting user id:", req.user._id.toString());
+
+    const rawMatch = await Resume.findById(req.params.id);
+    console.log("Exists at all (ignoring user)?", rawMatch ? rawMatch._id : null);
+    console.log("Owned by userId:", rawMatch ? rawMatch.userId.toString() : "N/A");
+
     const resume = await Resume.findOne({
       _id: req.params.id,
       userId: req.user._id,
@@ -124,28 +131,27 @@ const getResumeById = async (req, res) => {
 // ===============================
 const updateResume = async (req, res) => {
   try {
-    const resume = await Resume.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        userId: req.user._id,
-      },
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const resume = await Resume.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
 
     if (!resume) {
       return res.status(404).json({
         success: false,
-        message: "Resume not found",
+        message: "Resume not found or unauthorized",
       });
     }
 
+    // Merge updates from req.body into the existing resume
+    Object.assign(resume, req.body);
+
+    // Save updated resume (runs schema validators automatically)
+    const savedResume = await resume.save();
+
     res.status(200).json({
       success: true,
-      resume,
+      resume: savedResume,
     });
   } catch (error) {
     res.status(500).json({
