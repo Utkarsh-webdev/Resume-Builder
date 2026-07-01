@@ -4,6 +4,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const connectDB = require("./config/db.js");
+const authRoutes = require('./routes/authRoutes.js')
+
 
 const app = express();
 
@@ -27,15 +29,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static Folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
+  setHeaders: (res, path) => {
+    res.set("Access-Control-Allow-Origin", "http://localhost:5173")
+  }
+}));
 
-// Test Route
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Resume Builder API is Running 🚀",
-  });
-});
+// Route
+app.use("/api/auth", authRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
