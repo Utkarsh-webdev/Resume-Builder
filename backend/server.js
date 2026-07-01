@@ -15,19 +15,19 @@ const app = express();
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// Connect Database
-connectDB();
-
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Connect Database
+connectDB();
 
 // Static Folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), {

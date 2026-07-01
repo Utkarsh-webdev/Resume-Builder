@@ -22,14 +22,13 @@ const ResumeSchema = new mongoose.Schema(
       colorPalette: [String],
     },
 
-    profileInfo: {
-      profilePreviewUrl: String,
-      previewUrl: "String",
-      fullName: String,
-      designation: String,
-      summary: String,
-    },
-
+   profileInfo: {
+  profilePreviewUrl: String,
+  previewUrl: String, 
+  fullName: String,
+  designation: String,
+  summary: String,
+},
     contactInfo: {
       email: String,
       phone: String,
