@@ -1,9 +1,11 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const Resume = require("../models/Resume");
 
-// ===============================
+// ======================================
 // Create Resume
 // POST /api/resume
-// ===============================
+// ======================================
 const createResume = async (req, res) => {
   try {
     const { title } = req.body;
@@ -36,16 +38,22 @@ const createResume = async (req, res) => {
       },
 
       workExperience: [],
+
       education: [],
+
       skills: [],
+
       projects: [],
+
       certifications: [],
+
       languages: [
         {
           name: "",
           progress: 0,
         },
       ],
+
       interests: [],
     });
 
@@ -62,10 +70,10 @@ const createResume = async (req, res) => {
   }
 };
 
-// ===============================
+// ======================================
 // Get All Resumes
 // GET /api/resume
-// ===============================
+// ======================================
 const getUserResumes = async (req, res) => {
   try {
     const resumes = await Resume.find({
@@ -87,19 +95,12 @@ const getUserResumes = async (req, res) => {
   }
 };
 
-// ===============================
+// ======================================
 // Get Resume By ID
 // GET /api/resume/:id
-// ===============================
+// ======================================
 const getResumeById = async (req, res) => {
   try {
-    console.log("Requested resume id:", req.params.id);
-    console.log("Requesting user id:", req.user._id.toString());
-
-    const rawMatch = await Resume.findById(req.params.id);
-    console.log("Exists at all (ignoring user)?", rawMatch ? rawMatch._id : null);
-    console.log("Owned by userId:", rawMatch ? rawMatch.userId.toString() : "N/A");
-
     const resume = await Resume.findOne({
       _id: req.params.id,
       userId: req.user._id,
@@ -125,10 +126,10 @@ const getResumeById = async (req, res) => {
   }
 };
 
-// ===============================
+// ======================================
 // Update Resume
 // PUT /api/resume/:id
-// ===============================
+// ======================================
 const updateResume = async (req, res) => {
   try {
     const resume = await Resume.findOne({
@@ -143,15 +144,13 @@ const updateResume = async (req, res) => {
       });
     }
 
-    // Merge updates from req.body into the existing resume
     Object.assign(resume, req.body);
 
-    // Save updated resume (runs schema validators automatically)
-    const savedResume = await resume.save();
+    const updatedResume = await resume.save();
 
     res.status(200).json({
       success: true,
-      resume: savedResume,
+      resume: updatedResume,
     });
   } catch (error) {
     res.status(500).json({
@@ -162,13 +161,13 @@ const updateResume = async (req, res) => {
   }
 };
 
-// ===============================
+// ======================================
 // Delete Resume
 // DELETE /api/resume/:id
-// ===============================
+// ======================================
 const deleteResume = async (req, res) => {
   try {
-    const resume = await Resume.findOneAndDelete({
+    const resume = await Resume.findOne({
       _id: req.params.id,
       userId: req.user._id,
     });
@@ -176,9 +175,43 @@ const deleteResume = async (req, res) => {
     if (!resume) {
       return res.status(404).json({
         success: false,
-        message: "Resume not found",
+        message: "Resume not found or unauthorized",
       });
     }
+
+    const uploadsFolder = path.join(__dirname, "..", "uploads");
+
+    // Delete Thumbnail
+    if (resume.thumbnailLink) {
+      const oldThumbnail = path.join(
+        uploadsFolder,
+        path.basename(resume.thumbnailLink)
+      );
+
+      if (fs.existsSync(oldThumbnail)) {
+        fs.unlinkSync(oldThumbnail);
+      }
+    }
+
+    // Delete Profile Image
+    if (
+      resume.profileInfo &&
+      resume.profileInfo.profilePreviewUrl
+    ) {
+      const oldProfile = path.join(
+        uploadsFolder,
+        path.basename(resume.profileInfo.profilePreviewUrl)
+      );
+
+      if (fs.existsSync(oldProfile)) {
+        fs.unlinkSync(oldProfile);
+      }
+    }
+
+    const deleted = await Resume.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
 
     res.status(200).json({
       success: true,
