@@ -5,6 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const connectDB = require("./config/db.js");
 const authRoutes = require('./routes/authRoutes.js')
+const resumeRoutes = require("./routes/resumeRoutes");
 
 
 const app = express();
@@ -35,8 +36,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
   }
 }));
 
-// Route
+// Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/resume", resumeRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
