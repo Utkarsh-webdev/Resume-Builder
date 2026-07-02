@@ -18,7 +18,6 @@ const Signup = ({ setCurrentPage }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,18 +28,15 @@ const Signup = ({ setCurrentPage }) => {
     setError("");
 
     if (!name || !email || !password) {
-      setError("Please fill all fields.");
-      return;
+      return setError("Please fill all fields.");
     }
 
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      return;
+      return setError("Please enter a valid email.");
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
+      return setError("Password must be at least 8 characters.");
     }
 
     setLoading(true);
@@ -48,23 +44,12 @@ const Signup = ({ setCurrentPage }) => {
     try {
       let profileImageUrl = "";
 
-      // Register user first, so the upload call has a valid auth token
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
-        name,
-        email,
-        password,
-      });
-
-      const data = response.data;
-
-      localStorage.setItem("token", data.token);
-
-      // Upload image (optional) — now authenticated
+      // Upload Image
       if (profilePic) {
         const formData = new FormData();
         formData.append("image", profilePic);
 
-        const uploadResponse = await axiosInstance.post(
+        const uploadRes = await axiosInstance.post(
           API_PATHS.IMAGE.UPLOAD_IMAGE,
           formData,
           {
@@ -74,22 +59,26 @@ const Signup = ({ setCurrentPage }) => {
           }
         );
 
-        profileImageUrl = uploadResponse.data.imageUrl;
-
-        // Attach the photo to the freshly created profile
-        await axiosInstance.put(API_PATHS.AUTH.UPDATE_PROFILE, {
-          profileImageUrl,
-        });
+        profileImageUrl = uploadRes.data.imageUrl;
       }
 
-      updateUser({ ...data, profileImageUrl });
+      // Register User
+      const { data } = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        name,
+        email,
+        password,
+        profileImageUrl,
+      });
+
+      localStorage.setItem("token", data.token);
+
+      updateUser(data);
 
       navigate("/dashboard");
     } catch (err) {
-      console.error(err);
-      setError(
-        err.response?.data?.message || "Something went wrong. Please try again."
-      );
+      console.log(err.response?.data);
+
+      setError(err.response?.data?.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }

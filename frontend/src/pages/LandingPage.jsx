@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Modal from "../components/Modal";
 import Login from "./Auth/Login";
 import Signup from "./Auth/SignUp";
+import { UserContext } from "../components/context/userContext";
+import ProfileInfoCard from "../components/Card/ProfileInfoCard";
 
 const LandingPage = () => {
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
   const [openAuthModal, setOpenAuthModal] = useState(false);
@@ -28,9 +31,13 @@ const LandingPage = () => {
           Draft<span className="lp-logo-accent">ly</span>
         </h1>
 
-        <button className="lp-btn-ghost" onClick={() => openAuth("login")}>
-          Log in
-        </button>
+        {user ? (
+          <ProfileInfoCard />
+        ) : (
+          <button className="lp-btn-ghost" onClick={() => openAuth("login")}>
+            Log in
+          </button>
+        )}
       </header>
 
       {/* ===== Hero ===== */}
