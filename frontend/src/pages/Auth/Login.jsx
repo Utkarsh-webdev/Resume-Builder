@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/inputs/Input";
 import { validateEmail } from "../../utils/helper";
+import { UserContext } from "../../components/context/userContext";
+import { API_PATHS } from "../../utils/apiPaths";
+
+// ✅ Use your custom network instance with the correct absolute uppercase path casing
+import axiosInstance from "../../utils/axiosInstance"; 
+
 
 const Login = ({ setCurrentPage }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { updateUser } = useContext(UserContext);
 
   const navigate = useNavigate();
 
@@ -15,29 +22,37 @@ const Login = ({ setCurrentPage }) => {
     e.preventDefault();
     setError("");
 
-   if (!email || !password) {
-  setError("Please fill all fields.");
-  return;
-}
+    if (!email || !password) {
+      setError("Please fill all fields.");
+      return;
+    }
 
-if (!validateEmail(email)) {
-  setError("Please enter a valid email address.");
-  return;
-}
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
 
-if (password.length < 8) {
-  setError("Password must be at least 8 characters.");
-  return;
-}
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
 
     setLoading(true);
 
     try {
-      // TODO: Replace this with your API call
-      console.log("Email:", email);
-      console.log("Password:", password);
+     const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+    email,
+    password,
+  });
 
-      navigate("/dashboard");
+      const { token } = response.data;
+
+      if (token) {
+        // FIXED: Added the required token string argument to setItem
+        localStorage.setItem("token", token);
+        updateUser(response.data);
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError("Invalid email or password.");
     } finally {

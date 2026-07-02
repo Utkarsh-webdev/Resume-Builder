@@ -1,9 +1,60 @@
-import React from 'react'
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
 
-const userContext = () => {
+export const UserContext = createContext();
+
+export const UserProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const clearUser = useCallback(() => {
+    localStorage.removeItem("token");
+    setUser(null);
+  }, []);
+
+  useEffect(() => {
+    if (user) return;
+
+    const accessToken = localStorage.getItem("token");
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const response = await axiosInstance.get(API_PATHS.AUTH.GET_PROFILE);
+        setUser(response.data?.user || response.data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        clearUser();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [user, clearUser]);
+
+  const updateUser = (userData) => {
+    if (userData?.token) {
+      localStorage.setItem("token", userData.token);
+    }
+    
+    setUser((prevUser) => {
+      if (prevUser) {
+        return { ...prevUser, ...userData };
+      }
+      return userData;
+    });
+    
+    setLoading(false);
+  };
+
   return (
-    <div>userContext</div>
-  )
-}
-
-export default userContext
+    <UserContext.Provider value={{ user, loading, updateUser, clearUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};

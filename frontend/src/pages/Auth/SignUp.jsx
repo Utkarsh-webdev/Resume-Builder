@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Input from "../../components/inputs/Input";
 import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector";
 import { validateEmail } from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
+import { UserContext } from "../../components/context/userContext";
 
 const Signup = ({ setCurrentPage }) => {
   const navigate = useNavigate();
+  const { updateUser } = useContext(UserContext);
 
   // Form States
   const [profilePic, setProfilePic] = useState(null);
@@ -42,20 +46,50 @@ const Signup = ({ setCurrentPage }) => {
     setLoading(true);
 
     try {
-      console.log({
-        profilePic,
+      let profileImageUrl = "";
+
+      // Register user first, so the upload call has a valid auth token
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
         name,
         email,
         password,
       });
 
-      // TODO:
-      // Upload Image
-      // Register User
+      const data = response.data;
+
+      localStorage.setItem("token", data.token);
+
+      // Upload image (optional) — now authenticated
+      if (profilePic) {
+        const formData = new FormData();
+        formData.append("image", profilePic);
+
+        const uploadResponse = await axiosInstance.post(
+          API_PATHS.IMAGE.UPLOAD_IMAGE,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        profileImageUrl = uploadResponse.data.imageUrl;
+
+        // Attach the photo to the freshly created profile
+        await axiosInstance.put(API_PATHS.AUTH.UPDATE_PROFILE, {
+          profileImageUrl,
+        });
+      }
+
+      updateUser({ ...data, profileImageUrl });
 
       navigate("/dashboard");
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      console.error(err);
+      setError(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
