@@ -7,7 +7,7 @@ const CreateResumeForm = () => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateResume = async (e) => {
@@ -26,54 +26,111 @@ const CreateResumeForm = () => {
         title,
       });
 
-      if (response.data?._id) {
-        navigate(`/resume/${response.data._id}`);
-      } else if (response.data?.resume?._id) {
-        navigate(`/resume/${response.data.resume._id}`);
-      }
-    } catch (error) {
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      const newId = response.data?._id || response.data?.resume?._id;
+      if (newId) navigate(`/resume/${newId}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full">
-      <h3 className="text-lg font-semibold text-gray-800">
-        Create New Resume
-      </h3>
-      <p className="text-sm text-gray-500 mt-1 mb-4">
-        Give your resume a title to get started. You can edit everything else
-        later.
+    <div className="cr-wrap">
+      <span className="cr-eyebrow">NEW DRAFT</span>
+      <h3 className="cr-title">Create New Resume</h3>
+      <p className="cr-sub">
+        Give it a title — you can change everything else later.
       </p>
 
       <form onSubmit={handleCreateResume}>
-        <label className="text-sm font-medium text-gray-700">
-          Resume Title
-        </label>
+        <label className="cr-label">Resume Title</label>
         <input
           type="text"
           placeholder="e.g., Frontend Developer Resume"
-          className="w-full mt-1 mb-3 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-400 text-sm"
+          className="cr-input"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          autoFocus
         />
 
-        {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+        {error && <p className="cr-error">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-purple-500 hover:bg-purple-600 disabled:opacity-60 text-white text-sm font-medium py-2.5 rounded-lg transition"
-        >
-          {isLoading ? "Creating..." : "Create Resume"}
+        <button type="submit" disabled={isLoading} className="cr-btn">
+          {isLoading ? "Creating..." : "Create Resume →"}
         </button>
       </form>
+
+      <style>{`
+        .cr-eyebrow {
+          font-family: var(--font-mono, monospace);
+          font-size: 0.72rem;
+          font-weight: 500;
+          letter-spacing: 0.12em;
+          color: var(--graphite, #6b6862);
+          display: inline-block;
+          padding: 5px 10px;
+          border: 1px solid var(--line, #e4dfd3);
+          border-radius: 999px;
+          margin-bottom: 14px;
+        }
+        .cr-title {
+          font-family: var(--font-display, sans-serif);
+          font-weight: 900;
+          font-size: 1.35rem;
+          color: var(--ink, #16140f);
+          margin: 0 0 8px;
+        }
+        .cr-sub {
+          font-family: var(--font-body, sans-serif);
+          font-size: 0.9rem;
+          color: var(--graphite, #6b6862);
+          margin: 0 0 22px;
+          line-height: 1.5;
+        }
+        .cr-label {
+          font-family: var(--font-body, sans-serif);
+          font-weight: 600;
+          font-size: 0.85rem;
+          color: var(--ink, #16140f);
+        }
+        .cr-input {
+          width: 100%;
+          margin: 8px 0 4px;
+          padding: 13px 14px;
+          font-family: var(--font-body, sans-serif);
+          font-size: 1rem;
+          border: 1.5px solid var(--line, #e4dfd3);
+          border-radius: 10px;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color 0.2s ease;
+        }
+        .cr-input:focus { border-color: var(--violet, #6c4fff); }
+        .cr-error {
+          font-family: var(--font-body, sans-serif);
+          font-size: 0.8rem;
+          color: var(--signal, #ff4f1f);
+          margin: 6px 0 0;
+        }
+        .cr-btn {
+          width: 100%;
+          margin-top: 18px;
+          padding: 14px;
+          font-family: var(--font-body, sans-serif);
+          font-weight: 700;
+          font-size: 0.95rem;
+          background: var(--signal, #ff4f1f);
+          color: #fff;
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          box-shadow: var(--shadow-soft, 0 8px 24px -8px rgba(0,0,0,0.15));
+          transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .cr-btn:disabled { opacity: 0.6; cursor: default; }
+        .cr-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: var(--shadow-card, 0 20px 50px -15px rgba(0,0,0,0.25)); }
+      `}</style>
     </div>
   );
 };
