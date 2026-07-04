@@ -14,8 +14,10 @@ const TitleInput = ({ title, setTitle }) => {
             className="border px-2 py-1 rounded text-lg font-medium focus:outline-purple-500"
             value={title}
             onChange={({ target }) => setTitle(target.value)}
+            autoFocus
           />
-          <button 
+
+          <button
             className="p-1 text-green-600 hover:bg-gray-100 rounded"
             onClick={() => setShowInput((prevState) => !prevState)}
           >
