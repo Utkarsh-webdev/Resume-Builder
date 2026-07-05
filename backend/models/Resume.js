@@ -18,23 +18,26 @@ const ResumeSchema = new mongoose.Schema(
     },
 
     template: {
+      templateId: String,
       theme: String,
-      colorPalette: [String],
+      colorPalette: String, // was [String] — this was the bug
     },
 
-   profileInfo: {
-  profilePreviewUrl: String,
-  previewUrl: String, 
-  fullName: String,
-  designation: String,
-  summary: String,
-},
+    profileInfo: {
+      profilePreviewUrl: String,
+      previewUrl: String,
+      fullName: String,
+      designation: String,
+      summary: String,
+    },
+
     contactInfo: {
       email: String,
       phone: String,
       location: String,
       linkedin: String,
       github: String,
+      leetcode: String,
       website: String,
     },
 
@@ -51,16 +54,17 @@ const ResumeSchema = new mongoose.Schema(
     education: [
       {
         degree: String,
-        institution: String,
+        school: String, // was "institution" — didn't match frontend
         startDate: String,
         endDate: String,
+        description: String,
       },
     ],
 
     skills: [
       {
         name: String,
-        progress: Number,
+        level: String, // was "progress: Number" — didn't match frontend
       },
     ],
 
