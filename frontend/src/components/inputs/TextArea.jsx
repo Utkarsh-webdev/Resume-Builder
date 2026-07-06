@@ -1,19 +1,42 @@
 import React from "react";
 
-const TextArea = ({ label, value, onChange, placeholder, rows = 4 }) => {
+const TextArea = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  rows = 4,
+}) => {
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block mb-2 text-sm font-medium text-gray-700">
           {label}
         </label>
       )}
+
       <textarea
         value={value || ""}
-        placeholder={placeholder}
         onChange={onChange}
+        placeholder={placeholder}
         rows={rows}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 resize-y"
+        className="
+          w-full
+          rounded-lg
+          border
+          border-gray-200
+          bg-white
+          px-4
+          py-3
+          text-sm
+          text-gray-800
+          placeholder:text-gray-400
+          outline-none
+          resize-none
+          transition-colors
+          duration-200
+          focus:border-[#FF4F1F]
+        "
       />
     </div>
   );

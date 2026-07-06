@@ -2,38 +2,38 @@ import React, { useState } from "react";
 import { LuCheck, LuPencil } from "react-icons/lu";
 
 const TitleInput = ({ title, setTitle }) => {
-  const [showInput, setShowInput] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   return (
     <div className="flex items-center gap-2">
-      {showInput ? (
+      {editing ? (
         <>
           <input
             type="text"
-            placeholder="Resume title"
-            className="border px-2 py-1 rounded text-lg font-medium focus:outline-purple-500"
             value={title}
-            onChange={({ target }) => setTitle(target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             autoFocus
+            className="border-b border-[#FF4F1F] outline-none text-xl font-semibold bg-transparent"
           />
 
           <button
-            className="p-1 text-green-600 hover:bg-gray-100 rounded"
-            onClick={() => setShowInput((prevState) => !prevState)}
+            onClick={() => setEditing(false)}
+            className="text-[#FF4F1F] hover:opacity-80"
           >
-            <LuCheck className="text-xl" />
+            <LuCheck size={18} />
           </button>
         </>
       ) : (
         <>
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-xl font-semibold text-gray-900">
             {title || "Untitled Resume"}
           </h1>
+
           <button
-            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-            onClick={() => setShowInput((prevState) => !prevState)}
+            onClick={() => setEditing(true)}
+            className="text-gray-400 hover:text-[#FF4F1F]"
           >
-            <LuPencil className="text-lg" />
+            <LuPencil size={18} />
           </button>
         </>
       )}
