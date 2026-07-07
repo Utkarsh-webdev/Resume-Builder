@@ -23,11 +23,15 @@ const StepProgress = ({ progress, currentPage, stepNumber, totalSteps }) => {
               }`
             : "Progress"}
         </span>
-        <span className="text-xs font-medium text-purple-600">{progress}%</span>
+
+        <span className="text-xs font-medium text-[#FF4F1F]">
+          {progress}%
+        </span>
       </div>
-      <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+
+      <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
         <div
-          className="h-full bg-purple-600 rounded-full transition-all duration-300"
+          className="h-full rounded-full bg-[#FF4F1F] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>

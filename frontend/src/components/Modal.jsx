@@ -60,7 +60,7 @@ const Modal = ({
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=Inter:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Inter:wght@400;500;600&display=swap');
 
         .dm-overlay {
           position: fixed;
@@ -69,114 +69,139 @@ const Modal = ({
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 16px;
+          padding: 20px;
         }
+
         .dm-backdrop {
           position: absolute;
           inset: 0;
-          background: rgba(22, 20, 15, 0.55);
-          backdrop-filter: blur(4px);
+          background: rgba(15, 23, 42, 0.45);
+          backdrop-filter: blur(6px);
         }
+
         .dm-modal {
           position: relative;
           z-index: 10;
           width: 100%;
-          max-width: 460px;
-          max-height: min(720px, 92vh);
+          max-width: 480px;
+          max-height: 92vh;
           display: flex;
           flex-direction: column;
-          background: var(--paper, #faf7f0);
-          border: 1px solid var(--line, #e4dfd3);
-          border-radius: 22px;
-          box-shadow: 0 24px 60px -16px rgba(22, 20, 15, 0.35);
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
           overflow: hidden;
-          animation: dm-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: modalIn .22s ease;
         }
-        @keyframes dm-pop {
-          from { opacity: 0; transform: translateY(14px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .dm-modal { animation: none; }
+
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
         }
 
         .dm-header {
-          flex-shrink: 0;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          border-bottom: 1px solid var(--line, #e4dfd3);
-          padding: 20px 24px;
+          padding: 18px 22px;
+          border-bottom: 1px solid #f1f5f9;
         }
+
         .dm-title {
-          font-family: var(--font-display, "Archivo", sans-serif);
-          font-weight: 800;
-          font-size: 1.15rem;
-          color: var(--ink, #16140f);
           margin: 0;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #111827;
         }
-        .dm-header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .dm-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
 
         .dm-action-btn {
           display: flex;
           align-items: center;
           gap: 8px;
-          font-family: var(--font-body, "Inter", sans-serif);
-          font-weight: 600;
-          font-size: 0.9rem;
           padding: 9px 16px;
-          border-radius: 10px;
           border: none;
-          background: var(--ink, #16140f);
-          color: var(--paper, #faf7f0);
+          border-radius: 10px;
+          background: #FF4F1F;
+          color: white;
+          font-size: .9rem;
+          font-weight: 600;
           cursor: pointer;
+          transition: .2s;
+        }
+
+        .dm-action-btn:hover {
+          background: #E84618;
         }
 
         .dm-close-btn {
+          height: 38px;
+          width: 38px;
           display: flex;
           align-items: center;
           justify-content: center;
-          height: 38px;
-          width: 38px;
-          flex-shrink: 0;
           border-radius: 50%;
-          border: 1px solid var(--line, #e4dfd3);
-          background: var(--paper, #faf7f0);
-          color: var(--ink, #16140f);
+          border: 1px solid #e5e7eb;
+          background: white;
+          color: #6b7280;
           cursor: pointer;
-          transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-        }
-        .dm-close-btn:hover {
-          background: var(--ink, #16140f);
-          color: var(--paper, #faf7f0);
-          transform: rotate(90deg);
-        }
-        .dm-close-btn:focus-visible {
-          outline: 3px solid var(--violet, #6c4fff);
-          outline-offset: 2px;
-        }
-        .dm-close-floating {
-          position: absolute;
-          top: 18px;
-          right: 18px;
-          z-index: 5;
-          background: var(--paper, #faf7f0);
+          transition: .2s;
         }
 
-        /* Body scrolls internally when content is taller than the modal */
+        .dm-close-btn:hover {
+          background: #FFF4F1;
+          color: #FF4F1F;
+          border-color: #FF4F1F;
+          transform: rotate(90deg);
+        }
+
+        .dm-close-btn:focus-visible {
+          outline: 2px solid #FF4F1F;
+          outline-offset: 2px;
+        }
+
+        .dm-close-floating {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          z-index: 5;
+        }
+
         .dm-body {
-          padding: 36px 32px;
+          padding: 28px 24px;
           overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none; /* IE/Edge */
+          scrollbar-width: none;
         }
+
         .dm-body::-webkit-scrollbar {
-          display: none; /* Chrome, Safari, Edge (Chromium) */
+          display: none;
         }
-        @media (max-width: 480px) {
-          .dm-body { padding: 30px 22px; }
-          .dm-modal { max-height: 94vh; }
+
+        @media (max-width:640px) {
+          .dm-modal {
+            max-width: 100%;
+            border-radius: 16px;
+          }
+
+          .dm-header {
+            padding: 16px 18px;
+          }
+
+          .dm-body {
+            padding: 22px 18px;
+          }
         }
       `}</style>
     </div>
@@ -184,13 +209,12 @@ const Modal = ({
 };
 
 const CloseIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <path
+      d="M1 1L13 13M13 1L1 13"
       stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       strokeWidth="2"
-      d="M1 1l6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+      strokeLinecap="round"
     />
   </svg>
 );

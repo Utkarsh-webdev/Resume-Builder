@@ -3,7 +3,7 @@ import Modal from "../Modal";
 
 const TEMPLATES = [
   { id: "01", label: "Classic", desc: "Single column, clean and traditional" },
-  { id: "02", label: "Executive", desc: "Dark sidebar, bold accent highlights" },
+  { id: "02", label: "Executive", desc: "ATS-friendly design for Data Analytics professionals with a structured two-column layout." },
   { id: "03", label: "Sidebar", desc: "Two-column with a colored sidebar" },
   { id: "04", label: "ATS Plain", desc: "Dense, no color — maximum ATS compatibility" },
   { id: "05", label: "Dev ATS", desc: "ATS-optimized, built for developer roles" },
