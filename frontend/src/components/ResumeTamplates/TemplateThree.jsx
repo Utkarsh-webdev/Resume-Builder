@@ -3,6 +3,7 @@ import moment from "moment";
 import { getPalette } from "./paletteMap";
 import ContactRow from "../ResumeSections/ContactRow";
 import ProjectLinks from "../ResumeSections/ProjectLinks";
+import Avatar from "../ResumeSections/Avatar";
 
 const fmt = (d) => (d ? moment(d, "YYYY-MM").format("MMM YYYY") : "");
 
@@ -29,14 +30,15 @@ const TemplateThree = ({ resumeData, colorPalette, containerWidth }) => {
     >
       {/* Dark sidebar */}
       <div className="w-[240px] p-6 flex-shrink-0 text-white" style={{ background: "#1c1f2b" }}>
-        {profileInfo?.profilePreviewUrl && (
-          <img
-            src={profileInfo.profilePreviewUrl}
-            alt={profileInfo?.fullName || "Profile"}
-            className="w-20 h-20 rounded-full object-cover mb-5 border-2"
-            style={{ borderColor: accent }}
+        <div className="mb-5">
+          <Avatar
+            src={profileInfo?.profilePreviewUrl}
+            name={profileInfo?.fullName}
+            size={80}
+            accent={accent}
+            borderColor={accent}
           />
-        )}
+        </div>
 
         <SideSection title="Contact" accent={accent}>
           <ContactRow contactInfo={contactInfo} tone="light" layout="column" />
@@ -89,7 +91,7 @@ const TemplateThree = ({ resumeData, colorPalette, containerWidth }) => {
 
       {/* Main content */}
       <div className="flex-1 p-8">
-        <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: "#1c1f2b" }}>
+        <h1 className="text-3xl font-extrabold tracking-tight break-words" style={{ color: "#1c1f2b" }}>
           {profileInfo?.fullName || "Your Name"}
         </h1>
         <p className="text-sm font-semibold mt-1 uppercase tracking-wide" style={{ color: accent }}>
@@ -98,7 +100,7 @@ const TemplateThree = ({ resumeData, colorPalette, containerWidth }) => {
 
         {profileInfo?.summary && (
           <MainSection title="Professional Summary" accent={accent}>
-            <p className="text-sm text-gray-700">{profileInfo.summary}</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{profileInfo.summary}</p>
           </MainSection>
         )}
 
@@ -106,12 +108,12 @@ const TemplateThree = ({ resumeData, colorPalette, containerWidth }) => {
           <MainSection title="Professional Experience" accent={accent}>
             {workExperience.map((w, i) => w.company && (
               <div key={i} className="mb-4">
-                <div className="flex flex-wrap items-baseline justify-between">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                   <strong className="text-sm">{w.role}</strong>
-                  <span className="text-xs text-gray-500">{fmt(w.startDate)} — {fmt(w.endDate) || "Present"}</span>
+                  <span className="text-xs text-gray-500 whitespace-nowrap">{fmt(w.startDate)} — {fmt(w.endDate) || "Present"}</span>
                 </div>
                 <p className="text-xs font-medium text-gray-500">{w.company}</p>
-                <p className="text-sm text-gray-700 mt-1">{w.description}</p>
+                <p className="text-sm text-gray-700 mt-1 leading-relaxed">{w.description}</p>
               </div>
             ))}
           </MainSection>
@@ -122,7 +124,7 @@ const TemplateThree = ({ resumeData, colorPalette, containerWidth }) => {
             {projects.map((p, i) => p.title && (
               <div key={i} className="mb-3">
                 <strong className="text-sm">{p.title}</strong>
-                <p className="text-sm text-gray-700 mt-1">{p.description}</p>
+                <p className="text-sm text-gray-700 mt-1 leading-relaxed">{p.description}</p>
                 <ProjectLinks github={p.github} liveDemo={p.liveDemo} accent={accent} />
               </div>
             ))}

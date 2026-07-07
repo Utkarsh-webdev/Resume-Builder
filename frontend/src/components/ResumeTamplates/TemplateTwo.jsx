@@ -3,13 +3,19 @@ import moment from "moment";
 import { getPalette } from "./paletteMap";
 import ContactRow from "../ResumeSections/ContactRow";
 import ProjectLinks from "../ResumeSections/ProjectLinks";
+import SafeImage from "../ResumeSections/SafeImage";
 
 const fmt = (d) => (d ? moment(d, "YYYY-MM").format("MMM YYYY") : "");
 
+// Data Analytics resume. Single column (not a sidebar layout) — data/BI
+// roles are among the most heavily ATS-screened, so this template prioritizes
+// parse reliability over visual flourish. Technical Skills sits right under
+// the summary since keyword-matching on tools (SQL, Python, Tableau, Excel,
+// Power BI) is what most analyst-role ATS filters weigh first.
 const TemplateTwo = ({ resumeData, colorPalette, containerWidth }) => {
   const {
     profileInfo, contactInfo, workExperience, education,
-    skills, projects, certifications, languages, interests,
+    skills, projects, certifications, languages,
   } = resumeData;
 
   const { accent, accentSoft } = getPalette(colorPalette);
@@ -17,128 +23,103 @@ const TemplateTwo = ({ resumeData, colorPalette, containerWidth }) => {
 
   return (
     <div
-      className="bg-white text-gray-800 flex"
+      className="bg-white text-gray-800"
       style={{
         width: 800,
-        minHeight: 1000,
+        padding: 40,
         transform: `scale(${scale})`,
         transformOrigin: "top left",
         fontFamily: "Inter, -apple-system, sans-serif",
       }}
     >
-      {/* Sidebar */}
-      <div className="w-[260px] p-7 text-white flex-shrink-0" style={{ background: accent }}>
-        {profileInfo?.profilePreviewUrl && (
-          <img
-            src={profileInfo.profilePreviewUrl}
-            alt={profileInfo?.fullName || "Profile"}
-            className="w-24 h-24 rounded-full object-cover border-2 border-white mb-4"
-          />
-        )}
-        <h1 className="text-xl font-bold leading-tight">{profileInfo?.fullName || "Your Name"}</h1>
-        <p className="text-sm opacity-90 mt-1">{profileInfo?.designation}</p>
-
-        <div className="mt-6">
-          <ContactRow contactInfo={contactInfo} tone="light" layout="column" />
+      <div className="flex items-center gap-5 pb-4 mb-5" style={{ borderBottom: `3px solid ${accent}` }}>
+        <SafeImage
+          src={profileInfo?.profilePreviewUrl}
+          alt={profileInfo?.fullName || "Profile"}
+          className="w-20 h-20 rounded-full object-cover border border-gray-200 flex-shrink-0"
+        />
+        <div>
+          <h1 className="text-3xl font-bold">{profileInfo?.fullName || "Your Name"}</h1>
+          <p className="font-semibold mt-1 uppercase tracking-wide text-sm" style={{ color: accent }}>
+            {profileInfo?.designation || "Data Analyst"}
+          </p>
+          <div className="mt-2">
+            <ContactRow contactInfo={contactInfo} tone="dark" />
+          </div>
         </div>
+      </div>
 
-        {skills?.some((s) => s.name) && (
-          <div className="mt-7">
-            <h2 className="text-xs font-bold uppercase tracking-wide mb-2 opacity-80">Skills</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {skills.filter((s) => s.name).map((s, i) => (
-                <span key={i} className="text-[11px] px-2 py-1 rounded bg-white/15">
-                  {s.name}
+      {profileInfo?.summary && (
+        <Section title="Professional Summary" accent={accent} accentSoft={accentSoft}>
+          <p className="text-sm">{profileInfo.summary}</p>
+        </Section>
+      )}
+
+      {skills?.some((s) => s.name) && (
+        <Section title="Technical Skills" accent={accent} accentSoft={accentSoft}>
+          <p className="text-sm">
+            {skills.filter((s) => s.name).map((s) => s.name).join("  •  ")}
+          </p>
+        </Section>
+      )}
+
+      {workExperience?.some((w) => w.company) && (
+        <Section title="Professional Experience" accent={accent} accentSoft={accentSoft}>
+          {workExperience.map((w, i) => w.company && (
+            <div key={i} className="mb-3">
+              <div className="flex flex-wrap items-baseline gap-1">
+                <strong className="text-sm">{w.role}</strong>
+                <span className="text-sm">· {w.company}</span>
+                <span className="ml-auto text-xs text-gray-500">
+                  {fmt(w.startDate)} — {fmt(w.endDate) || "Present"}
                 </span>
-              ))}
+              </div>
+              {w.description
+                ?.split(/\n|(?<=\.)\s+(?=[A-Z])/)
+                .filter(Boolean)
+                .map((line, li) => (
+                  <p key={li} className="text-sm text-gray-600 mt-1">• {line.trim()}</p>
+                ))}
             </div>
-          </div>
-        )}
+          ))}
+        </Section>
+      )}
 
-        {languages?.some((l) => l.name) && (
-          <div className="mt-7">
-            <h2 className="text-xs font-bold uppercase tracking-wide mb-2 opacity-80">Languages</h2>
-            {languages.map((l, i) => l.name && (
-              <div key={i} className="mb-2">
-                <p className="text-xs mb-1">{l.name}</p>
-                <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-white rounded-full" style={{ width: `${l.progress}%` }} />
-                </div>
+      {projects?.some((p) => p.title) && (
+        <Section title="Data Projects" accent={accent} accentSoft={accentSoft}>
+          {projects.map((p, i) => p.title && (
+            <div key={i} className="mb-3">
+              <strong className="text-sm">{p.title}</strong>
+              <p className="text-sm text-gray-600 mt-1">{p.description}</p>
+              <ProjectLinks github={p.github} liveDemo={p.liveDemo} accent={accent} />
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {education?.some((e) => e.school) && (
+        <Section title="Education" accent={accent} accentSoft={accentSoft}>
+          {education.map((e, i) => e.school && (
+            <div key={i} className="mb-2">
+              <div className="flex flex-wrap items-baseline gap-1">
+                <strong className="text-sm">{e.degree}</strong>
+                <span className="text-sm">· {e.school}</span>
+                <span className="ml-auto text-xs text-gray-500">
+                  {fmt(e.startDate)} — {fmt(e.endDate)}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </Section>
+      )}
 
-        {interests?.some((i) => i) && (
-          <div className="mt-7">
-            <h2 className="text-xs font-bold uppercase tracking-wide mb-2 opacity-80">Interests</h2>
-            <p className="text-xs opacity-90">{interests.filter(Boolean).join(" · ")}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Main column */}
-      <div className="flex-1 p-8">
-        {profileInfo?.summary && (
-          <Section title="Summary" accent={accent} accentSoft={accentSoft}>
-            <p className="text-sm">{profileInfo.summary}</p>
-          </Section>
-        )}
-
-        {workExperience?.some((w) => w.company) && (
-          <Section title="Experience" accent={accent} accentSoft={accentSoft}>
-            {workExperience.map((w, i) => w.company && (
-              <div key={i} className="mb-3">
-                <div className="flex flex-wrap items-baseline gap-1">
-                  <strong className="text-sm">{w.role}</strong>
-                  <span className="text-sm">· {w.company}</span>
-                  <span className="ml-auto text-xs text-gray-500">
-                    {fmt(w.startDate)} — {fmt(w.endDate) || "Present"}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mt-1">{w.description}</p>
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {projects?.some((p) => p.title) && (
-          <Section title="Projects" accent={accent} accentSoft={accentSoft}>
-            {projects.map((p, i) => p.title && (
-              <div key={i} className="mb-3">
-                <strong className="text-sm">{p.title}</strong>
-                <p className="text-sm text-gray-600 mt-1">{p.description}</p>
-                <ProjectLinks github={p.github} liveDemo={p.liveDemo} accent={accent} />
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {education?.some((e) => e.school) && (
-          <Section title="Education" accent={accent} accentSoft={accentSoft}>
-            {education.map((e, i) => e.school && (
-              <div key={i} className="mb-3">
-                <div className="flex flex-wrap items-baseline gap-1">
-                  <strong className="text-sm">{e.degree}</strong>
-                  <span className="text-sm">· {e.school}</span>
-                  <span className="ml-auto text-xs text-gray-500">
-                    {fmt(e.startDate)} — {fmt(e.endDate)}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mt-1">{e.description}</p>
-              </div>
-            ))}
-          </Section>
-        )}
-
-        {certifications?.some((c) => c.title) && (
-          <Section title="Certifications" accent={accent} accentSoft={accentSoft} last>
-            {certifications.map((c, i) => c.title && (
-              <p key={i} className="text-sm">{c.title} — {c.issuer} ({c.year})</p>
-            ))}
-          </Section>
-        )}
-      </div>
+      {certifications?.some((c) => c.title) && (
+        <Section title="Certifications" accent={accent} accentSoft={accentSoft} last>
+          {certifications.map((c, i) => c.title && (
+            <p key={i} className="text-sm">{c.title} — {c.issuer} ({c.year})</p>
+          ))}
+        </Section>
+      )}
     </div>
   );
 };

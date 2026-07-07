@@ -101,6 +101,22 @@ const EditResume = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Local-only preview URL for a freshly-picked photo, used purely for
+  // rendering (Live Preview + hidden thumbnail capture). Never sent to the
+  // backend — a real server URL only ever lands in resumeData.profileInfo
+  // .profilePreviewUrl after a successful upload in uploadResumeImages().
+  const [localPhotoPreview, setLocalPhotoPreview] = useState("");
+
+  useEffect(() => {
+    const file = resumeData.profileInfo.profileImg;
+    if (file instanceof File) {
+      const objectUrl = URL.createObjectURL(file);
+      setLocalPhotoPreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+    setLocalPhotoPreview("");
+  }, [resumeData.profileInfo.profileImg]);
+
   const currentIndex = STEPS.indexOf(currentPage);
   const progress = Math.round(((currentIndex + 1) / STEPS.length) * 100);
 
@@ -179,43 +195,43 @@ const EditResume = () => {
   };
 
   // ---- persistence ----
-const fetchResumeDetailsById = async () => {
-  try {
-    setIsLoading(true);
+  const fetchResumeDetailsById = async () => {
+    try {
+      setIsLoading(true);
 
-    const response = await axiosInstance.get(
-      API_PATHS.RESUME.GET_BY_ID(resumeId)
-    );
+      const response = await axiosInstance.get(
+        API_PATHS.RESUME.GET_BY_ID(resumeId)
+      );
 
-    if (response.data.success) {
-      const resumeInfo = response.data.resume;
+      if (response.data.success) {
+        const resumeInfo = response.data.resume;
 
-      setResumeData((prev) => ({
-        ...prev,
-        title: resumeInfo.title || "Untitled Resume",
-        thumbnailLink: resumeInfo.thumbnailLink || "",
-        template: resumeInfo.template || prev.template,
-        profileInfo: {
-          ...prev.profileInfo,
-          ...resumeInfo.profileInfo,
-        },
-        contactInfo: resumeInfo.contactInfo || prev.contactInfo,
-        workExperience: resumeInfo.workExperience || [],
-        education: resumeInfo.education || [],
-        skills: resumeInfo.skills || [],
-        projects: resumeInfo.projects || [],
-        certifications: resumeInfo.certifications || [],
-        languages: resumeInfo.languages || [],
-        interests: resumeInfo.interests || [],
-      }));
+        setResumeData((prev) => ({
+          ...prev,
+          title: resumeInfo.title || "Untitled Resume",
+          thumbnailLink: resumeInfo.thumbnailLink || "",
+          template: resumeInfo.template || prev.template,
+          profileInfo: {
+            ...prev.profileInfo,
+            ...resumeInfo.profileInfo,
+          },
+          contactInfo: resumeInfo.contactInfo || prev.contactInfo,
+          workExperience: resumeInfo.workExperience || [],
+          education: resumeInfo.education || [],
+          skills: resumeInfo.skills || [],
+          projects: resumeInfo.projects || [],
+          certifications: resumeInfo.certifications || [],
+          languages: resumeInfo.languages || [],
+          interests: resumeInfo.interests || [],
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load resume");
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to load resume");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // Saves the resume, then navigates back to the dashboard.
   // thumbnailLink / profilePreviewUrl are optional overrides — pass the
@@ -259,14 +275,14 @@ const fetchResumeDetailsById = async () => {
       setIsSaving(true);
 
       const payload = {
-    ...getSerializableResumeData(),
-    title: resumeData.title || "Untitled Resume",
-};
+        ...getSerializableResumeData(),
+        title: resumeData.title || "Untitled Resume",
+      };
 
-await axiosInstance.put(
-    API_PATHS.RESUME.UPDATE(resumeId),
-    payload
-);
+      const response = await axiosInstance.put(
+        API_PATHS.RESUME.UPDATE(resumeId),
+        payload
+      );
 
       if (response.data.success) {
         toast.success("Resume updated successfully");
@@ -283,55 +299,55 @@ await axiosInstance.put(
   // html-to-image, uploads it (and a new profile photo, if any) to
   // PUT /api/resume/:id/upload-images, then saves the rest of the resume
   // and navigates to the dashboard.
-const uploadResumeImages = async () => {
-  try {
-    setIsLoading(true);
+  const uploadResumeImages = async () => {
+    try {
+      setIsLoading(true);
 
-    const { profileImg } = resumeData.profileInfo;
-    const profileImageFile = profileImg instanceof File ? profileImg : null;
+      const { profileImg } = resumeData.profileInfo;
+      const profileImageFile = profileImg instanceof File ? profileImg : null;
 
-    let thumbnailFile = null;
-    if (resumeRef.current) {
-      try {
-        const blob = await toBlob(resumeRef.current, {
-          cacheBust: true,
-          pixelRatio: 1,
-          backgroundColor: "#ffffff",
-        });
-        if (blob) thumbnailFile = new File([blob], "thumbnail.png", { type: "image/png" });
-      } catch (captureError) {
-        // Thumbnail generation failing (e.g. a broken image reference)
-        // should never block saving the resume itself.
-        console.warn("Thumbnail capture failed, saving without a new thumbnail:", captureError);
+      let thumbnailFile = null;
+      if (resumeRef.current) {
+        try {
+          const blob = await toBlob(resumeRef.current, {
+            cacheBust: true,
+            pixelRatio: 1,
+            backgroundColor: "#ffffff",
+          });
+          if (blob) thumbnailFile = new File([blob], "thumbnail.png", { type: "image/png" });
+        } catch (captureError) {
+          // Thumbnail generation failing (e.g. a broken image reference)
+          // should never block saving the resume itself.
+          console.warn("Thumbnail capture failed, saving without a new thumbnail:", captureError);
+        }
       }
+
+      let thumbnailLink = resumeData.thumbnailLink;
+      let profilePreviewUrl = resumeData.profileInfo.profilePreviewUrl;
+
+      if (thumbnailFile || profileImageFile) {
+        const formData = new FormData();
+        if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
+        if (profileImageFile) formData.append("profileImage", profileImageFile);
+
+        const uploadResponse = await axiosInstance.put(
+          API_PATHS.RESUME.UPLOAD_IMAGES(resumeId),
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        thumbnailLink = uploadResponse.data.thumbnailLink || thumbnailLink;
+        profilePreviewUrl = uploadResponse.data.profilePreviewUrl || profilePreviewUrl;
+      }
+
+      await updateResumeDetails(thumbnailLink, profilePreviewUrl);
+    } catch (error) {
+      console.error("Error saving resume:", error);
+      toast.error("Failed to save resume");
+    } finally {
+      setIsLoading(false);
     }
-
-    let thumbnailLink = resumeData.thumbnailLink;
-    let profilePreviewUrl = resumeData.profileInfo.profilePreviewUrl;
-
-    if (thumbnailFile || profileImageFile) {
-      const formData = new FormData();
-      if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
-      if (profileImageFile) formData.append("profileImage", profileImageFile);
-
-      const uploadResponse = await axiosInstance.put(
-        API_PATHS.RESUME.UPLOAD_IMAGES(resumeId),
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      thumbnailLink = uploadResponse.data.thumbnailLink || thumbnailLink;
-      profilePreviewUrl = uploadResponse.data.profilePreviewUrl || profilePreviewUrl;
-    }
-
-    await updateResumeDetails(thumbnailLink, profilePreviewUrl);
-  } catch (error) {
-    console.error("Error saving resume:", error);
-    toast.error("Failed to save resume");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleDeleteResume = async () => {
     const confirmDelete = window.confirm(
@@ -463,6 +479,16 @@ const uploadResumeImages = async () => {
 
   const isLastStep = currentIndex === STEPS.length - 1;
 
+  // Used only for rendering (Live Preview + hidden thumbnail capture) — shows
+  // the freshly picked photo immediately, before it's uploaded/saved.
+  const previewResumeData = {
+    ...resumeData,
+    profileInfo: {
+      ...resumeData.profileInfo,
+      profilePreviewUrl: localPhotoPreview || resumeData.profileInfo.profilePreviewUrl,
+    },
+  };
+
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6 px-4">
@@ -556,7 +582,7 @@ const uploadResumeImages = async () => {
               >
                 <RenderResume
                   templateId={resumeData.template?.templateId}
-                  resumeData={resumeData}
+                  resumeData={previewResumeData}
                   colorPalette={resumeData.template?.colorPalette}
                   containerWidth={baseWidth}
                 />
@@ -611,7 +637,7 @@ const uploadResumeImages = async () => {
           <RenderResume
             ref={resumeRef}
             templateId={resumeData.template?.templateId}
-            resumeData={resumeData}
+            resumeData={previewResumeData}
             colorPalette={resumeData.template?.colorPalette}
             containerWidth={800}
           />
@@ -628,7 +654,7 @@ const uploadResumeImages = async () => {
       <PreviewModal
         isOpen={openPreviewModal}
         onClose={() => setOpenPreviewModal(false)}
-        resumeData={resumeData}
+        resumeData={previewResumeData}
         onDownload={reactToPrintFn}
         downloadRef={resumeDownloadRef}
       />

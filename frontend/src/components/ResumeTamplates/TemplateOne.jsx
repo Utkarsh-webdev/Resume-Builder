@@ -7,6 +7,9 @@ import SafeImage from "../ResumeSections/SafeImage";
 
 const fmt = (d) => (d ? moment(d, "YYYY-MM").format("MMM YYYY") : "");
 
+// Classic single-column resume. Ordered summary -> skills -> experience ->
+// education -> projects, since ATS parsers and recruiters both read
+// top-to-bottom and weight what's near the top most heavily.
 const TemplateOne = ({ resumeData, colorPalette, containerWidth }) => {
   const {
     profileInfo, contactInfo, workExperience, education,
@@ -28,11 +31,11 @@ const TemplateOne = ({ resumeData, colorPalette, containerWidth }) => {
       }}
     >
       <div className="flex items-center gap-5 border-b-4 pb-4 mb-5" style={{ borderColor: accent }}>
-       <SafeImage
-  src={profileInfo?.profilePreviewUrl}
-  alt={profileInfo?.fullName || "Profile"}
-  className="w-20 h-20 rounded-full object-cover border border-gray-200 flex-shrink-0"
-/>
+        <SafeImage
+          src={profileInfo?.profilePreviewUrl}
+          alt={profileInfo?.fullName || "Profile"}
+          className="w-20 h-20 rounded-full object-cover border border-gray-200 flex-shrink-0"
+        />
         <div>
           <h1 className="text-3xl font-bold">{profileInfo?.fullName || "Your Name"}</h1>
           <p className="font-semibold mt-1" style={{ color: accent }}>
@@ -47,6 +50,18 @@ const TemplateOne = ({ resumeData, colorPalette, containerWidth }) => {
       {profileInfo?.summary && (
         <Section title="Summary" accent={accent}>
           <p className="text-sm">{profileInfo.summary}</p>
+        </Section>
+      )}
+
+      {skills?.some((s) => s.name) && (
+        <Section title="Skills" accent={accent}>
+          <div className="flex flex-wrap gap-2">
+            {skills.filter((s) => s.name).map((s, i) => (
+              <span key={i} className="text-xs px-3 py-1 rounded-full border" style={{ borderColor: accent }}>
+                {s.name}{s.level ? ` · ${s.level}` : ""}
+              </span>
+            ))}
+          </div>
         </Section>
       )}
 
@@ -81,18 +96,6 @@ const TemplateOne = ({ resumeData, colorPalette, containerWidth }) => {
               <p className="text-sm text-gray-600 mt-1">{e.description}</p>
             </div>
           ))}
-        </Section>
-      )}
-
-      {skills?.some((s) => s.name) && (
-        <Section title="Skills" accent={accent}>
-          <div className="flex flex-wrap gap-2">
-            {skills.filter((s) => s.name).map((s, i) => (
-              <span key={i} className="text-xs px-3 py-1 rounded-full border" style={{ borderColor: accent }}>
-                {s.name}{s.level ? ` · ${s.level}` : ""}
-              </span>
-            ))}
-          </div>
         </Section>
       )}
 
