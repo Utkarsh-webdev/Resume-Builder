@@ -52,9 +52,9 @@ const EditResume = () => {
   const { resumeId } = useParams();
   const navigate = useNavigate();
 
-  const resumeRef = useRef(null); // hidden, off-screen — used for thumbnail capture
-  const livePreviewRef = useRef(null); // visible side panel — for width measurement
-  const resumeDownloadRef = useRef(null); // used by react-to-print inside PreviewModal
+  const resumeRef = useRef(null);
+  const livePreviewRef = useRef(null);
+  const resumeDownloadRef = useRef(null);
 
   const [baseWidth, setBaseWidth] = useState(800);
 
@@ -101,10 +101,6 @@ const EditResume = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Local-only preview URL for a freshly-picked photo, used purely for
-  // rendering (Live Preview + hidden thumbnail capture). Never sent to the
-  // backend — a real server URL only ever lands in resumeData.profileInfo
-  // .profilePreviewUrl after a successful upload in uploadResumeImages().
   const [localPhotoPreview, setLocalPhotoPreview] = useState("");
 
   useEffect(() => {
@@ -120,7 +116,6 @@ const EditResume = () => {
   const currentIndex = STEPS.indexOf(currentPage);
   const progress = Math.round(((currentIndex + 1) / STEPS.length) * 100);
 
-  // ---- generic section/array updaters ----
   const updateSection = (section, key, value) => {
     setResumeData((prev) => ({
       ...prev,
@@ -147,14 +142,11 @@ const EditResume = () => {
     }));
   };
 
-  // Builds a clean, JSON-safe copy of resumeData — strips the non-serializable
-  // File object (profileImg) so it's never sent in a JSON body to the server.
   const getSerializableResumeData = () => {
     const { profileImg, ...restProfileInfo } = resumeData.profileInfo;
     return { ...resumeData, profileInfo: restProfileInfo };
   };
 
-  // ---- step navigation ----
   const validateAndNext = () => {
     if (currentPage === "profile-info") {
       if (!resumeData.profileInfo.fullName?.trim()) {
@@ -194,7 +186,6 @@ const EditResume = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ---- persistence ----
   const fetchResumeDetailsById = async () => {
     try {
       setIsLoading(true);
@@ -233,10 +224,6 @@ const EditResume = () => {
     }
   };
 
-  // Saves the resume, then navigates back to the dashboard.
-  // thumbnailLink / profilePreviewUrl are optional overrides — pass the
-  // freshly-uploaded values right after an image upload; otherwise the
-  // current state values are used as-is.
   const updateResumeDetails = async (thumbnailLink, profilePreviewUrl) => {
     try {
       setIsSaving(true);
@@ -268,8 +255,6 @@ const EditResume = () => {
     }
   };
 
-  // Saves without navigating away — used by the top "Save" button, so the
-  // user can keep editing instead of being sent back to the dashboard.
   const saveResumeInPlace = async () => {
     try {
       setIsSaving(true);
@@ -295,10 +280,6 @@ const EditResume = () => {
     }
   };
 
-  // Captures a thumbnail snapshot from the hidden RenderResume instance via
-  // html-to-image, uploads it (and a new profile photo, if any) to
-  // PUT /api/resume/:id/upload-images, then saves the rest of the resume
-  // and navigates to the dashboard.
   const uploadResumeImages = async () => {
     try {
       setIsLoading(true);
@@ -316,8 +297,6 @@ const EditResume = () => {
           });
           if (blob) thumbnailFile = new File([blob], "thumbnail.png", { type: "image/png" });
         } catch (captureError) {
-          // Thumbnail generation failing (e.g. a broken image reference)
-          // should never block saving the resume itself.
           console.warn("Thumbnail capture failed, saving without a new thumbnail:", captureError);
         }
       }
@@ -390,7 +369,6 @@ const EditResume = () => {
     return () => {
       window.removeEventListener("resize", updateBaseWidth);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resumeId]);
 
   const renderForm = () => {
@@ -479,8 +457,6 @@ const EditResume = () => {
 
   const isLastStep = currentIndex === STEPS.length - 1;
 
-  // Used only for rendering (Live Preview + hidden thumbnail capture) — shows
-  // the freshly picked photo immediately, before it's uploaded/saved.
   const previewResumeData = {
     ...resumeData,
     profileInfo: {
@@ -527,7 +503,7 @@ const EditResume = () => {
             </button>
 
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium text-white"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#ff4f1f] hover:bg-[#e6440d] text-sm font-medium text-white"
               onClick={() => setOpenPreviewModal(true)}
             >
               <LuDownload className="text-base" />
@@ -535,7 +511,7 @@ const EditResume = () => {
             </button>
 
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-purple-600 text-purple-600 hover:bg-purple-50 text-sm font-medium disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#ff4f1f] text-[#ff4f1f] hover:bg-[#fff1ec] text-sm font-medium disabled:opacity-50"
               onClick={saveResumeInPlace}
               disabled={isSaving}
             >
@@ -559,7 +535,6 @@ const EditResume = () => {
           </div>
         )}
 
-        {/* Form + live preview side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             {isLoading ? (
@@ -569,7 +544,6 @@ const EditResume = () => {
             )}
           </div>
 
-          {/* Live preview panel — updates instantly as you type */}
           <div className="hidden lg:block">
             <div className="sticky top-4">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
@@ -591,7 +565,6 @@ const EditResume = () => {
           </div>
         </div>
 
-        {/* Bottom navigation */}
         <div className="flex items-center justify-between gap-3 mt-6 flex-wrap">
           <button
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-700 disabled:opacity-50"
@@ -603,7 +576,7 @@ const EditResume = () => {
           </button>
 
           <button
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-purple-600 text-purple-600 hover:bg-purple-50 text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#ff4f1f] text-[#ff4f1f] hover:bg-[#fff1ec] text-sm font-medium disabled:opacity-50"
             onClick={uploadResumeImages}
             disabled={isLoading}
           >
@@ -612,7 +585,7 @@ const EditResume = () => {
           </button>
 
           <button
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-sm font-medium text-white disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#ff4f1f] hover:bg-[#e6440d] text-sm font-medium text-white disabled:opacity-50"
             onClick={validateAndNext}
             disabled={isLoading}
           >
@@ -630,9 +603,6 @@ const EditResume = () => {
           </button>
         </div>
 
-        {/* Hidden, off-screen instance used only for html-to-image thumbnail
-            capture. Positioned off-canvas rather than display:none, since
-            hidden elements produce blank/empty captures. */}
         <div style={{ position: "fixed", top: 0, left: "-9999px", zIndex: -1 }}>
           <RenderResume
             ref={resumeRef}
