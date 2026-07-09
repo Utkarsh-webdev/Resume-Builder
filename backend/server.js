@@ -12,12 +12,23 @@ const app = express();
 
 // Middleware to handle CORS
 // NOTE: when credentials: true, origin must be a specific URL, never "*"
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -30,11 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 // Static Folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
-  setHeaders: (res, path) => {
-    res.set("Access-Control-Allow-Origin", "http://localhost:5173")
-  }
-}));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);
