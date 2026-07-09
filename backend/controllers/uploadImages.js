@@ -4,64 +4,122 @@ const Resume = require("../models/Resume");
 const upload = require("../middlewares/uploadMiddleware");
 
 const uploadResumeImages = (req, res) => {
-  upload.fields([{ name: "thumbnail" }, { name: "profileImage" }])(req, res, async (err) => {
-    // 1. Handle Multer file parsing errors
+  upload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "profileImage", maxCount: 1 },
+  ])(req, res, async (err) => {
     if (err) {
-      return res.status(400).json({ message: "File upload failed", error: err.message });
+      console.error("Multer Error:", err);
+
+      return res.status(400).json({
+        success: false,
+        message: err.message || "File upload failed",
+      });
     }
 
     try {
+      console.log("Upload request received");
+
       const resumeId = req.params.id;
-      const resume = await Resume.findOne({ _id: resumeId, userId: req.user._id });
+
+      const resume = await Resume.findOne({
+        _id: resumeId,
+        userId: req.user._id,
+      });
 
       if (!resume) {
-        return res.status(404).json({ message: "Resume not found or unauthorized" });
+        return res.status(404).json({
+          success: false,
+          message: "Resume not found or unauthorized",
+        });
       }
+
+      console.log("Resume found:", resume._id);
 
       const uploadsFolder = path.join(__dirname, "..", "uploads");
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
 
-      const newThumbnail = req.files?.thumbnail?.[0];
-      const newProfileImage = req.files?.profileImage?.[0];
+      // Always return HTTPS URL in production
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://resume-builder-w0b6.onrender.com"
+          : `${req.protocol}://${req.get("host")}`;
 
-      // 2. Handle Thumbnail cleanup and update
-      if (newThumbnail) {
-        if (resume.thumbnailLink) {
-          const oldThumbnail = path.join(uploadsFolder, path.basename(resume.thumbnailLink));
-          if (fs.existsSync(oldThumbnail)) fs.unlinkSync(oldThumbnail);
+      const thumbnailFile = req.files?.thumbnail?.[0];
+      const profileImageFile = req.files?.profileImage?.[0];
+
+      // -------------------------
+      // Thumbnail
+      // -------------------------
+      if (thumbnailFile) {
+        try {
+          if (resume.thumbnailLink) {
+            const oldThumbnail = path.join(
+              uploadsFolder,
+              path.basename(resume.thumbnailLink)
+            );
+
+            if (fs.existsSync(oldThumbnail)) {
+              fs.unlinkSync(oldThumbnail);
+            }
+          }
+        } catch (error) {
+          console.log("Couldn't delete old thumbnail:", error.message);
         }
-        resume.thumbnailLink = `${baseUrl}/uploads/${newThumbnail.filename}`;
+
+        resume.thumbnailLink = `${baseUrl}/uploads/${thumbnailFile.filename}`;
       }
 
-      // 3. Handle Profile Image cleanup and update
-      if (newProfileImage) {
-        // Initialize profileInfo object if it doesn't exist to prevent undefined errors
+      // -------------------------
+      // Profile Image
+      // -------------------------
+      if (profileImageFile) {
         if (!resume.profileInfo) {
           resume.profileInfo = {};
         }
 
-        if (resume.profileInfo?.profilePreviewUrl) {
-          const oldProfile = path.join(uploadsFolder, path.basename(resume.profileInfo.profilePreviewUrl));
-          if (fs.existsSync(oldProfile)) fs.unlinkSync(oldProfile);
+        try {
+          if (resume.profileInfo.profilePreviewUrl) {
+            const oldProfile = path.join(
+              uploadsFolder,
+              path.basename(resume.profileInfo.profilePreviewUrl)
+            );
+
+            if (fs.existsSync(oldProfile)) {
+              fs.unlinkSync(oldProfile);
+            }
+          }
+        } catch (error) {
+          console.log(
+            "Couldn't delete old profile image:",
+            error.message
+          );
         }
-        resume.profileInfo.profilePreviewUrl = `${baseUrl}/uploads/${newProfileImage.filename}`;
+
+        resume.profileInfo.profilePreviewUrl = `${baseUrl}/uploads/${profileImageFile.filename}`;
       }
 
-      // 4. Save updates to database
       await resume.save();
 
+      console.log("Resume saved successfully");
+
       return res.status(200).json({
+        success: true,
         message: "Images uploaded successfully",
         thumbnailLink: resume.thumbnailLink,
-        profilePreviewUrl: resume.profileInfo?.profilePreviewUrl,
+        profilePreviewUrl: resume.profileInfo.profilePreviewUrl,
       });
+    } catch (error) {
+      console.error("Upload Error:", error);
 
-    } catch (dbErr) {
-      // 5. Catch any database, saving, or file system errors here
-      console.error("Error processing database or files:", dbErr);
-      return res.status(500).json({ message: "Failed to upload images", error: dbErr.message });
+      return res.status(500).json({
+        success: false,
+        message: "Failed to upload images",
+        error: error.message,
+      });
     }
   });
 };
 
-module.exports = { uploadResumeImages };
+module.exports = {
+  uploadResumeImages,
+};
