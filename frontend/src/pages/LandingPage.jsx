@@ -126,7 +126,7 @@ const LandingPage = () => {
         <span>
           Built by{" "}
           <a
-            href="https://github.com/Utkarsh-webdev"
+            href="https://utkarshjha.qzz.io"
             target="_blank"
             rel="noopener noreferrer"
             className="lp-footer-credit"
