@@ -156,7 +156,6 @@ https://your-backend.onrender.com
 - Resume Sharing
 - Drag & Drop Sections
 - Dark Mode
-- Cloud Image Storage (Cloudinary)
 
 ---
 
